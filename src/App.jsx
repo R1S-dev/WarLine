@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import GameBoard from "./components/GameBoard";
 import ControlPanel from "./components/ControlPanel";
-import GoldBar from "./components/GoldBar";
 import GameOverScreen from "./components/GameOverScreen";
 
 // Custom hook za zlato sa animacijom, sada sporije i pauzira kad je winner
@@ -117,11 +116,6 @@ export default function App() {
 
   return (
     <div className="min-h-dvh w-full bg-gradient-to-b from-[#181c23] via-[#232837] to-[#32394a] text-white flex flex-col items-center gap-4 py-2 px-1 sm:gap-8 sm:py-8 sm:px-2 relative overflow-x-hidden">
-      {/* Nema više naslova WarLine */}
-      {/* GORE: ENEMY GOLD */}
-      <div className="w-full flex justify-end max-w-md mx-auto" style={{ marginBottom: 10 }}>
-        <GoldBar amount={aiGold} side="top" goldAnim={false} />
-      </div>
       {/* BOARD */}
       <div className="relative w-full max-w-md">
         <GameBoard
@@ -130,6 +124,9 @@ export default function App() {
           onGameOver={handleGameOver}
           onUnitRemove={handleUnitRemove}
           onUnitsUpdate={handleUnitsUpdate}
+          playerGold={gold}
+          enemyGold={aiGold}
+          playerGoldAnim={goldAnim}
         />
         {winner && (
           <GameOverScreen
@@ -137,10 +134,6 @@ export default function App() {
             onRestart={resetGame}
           />
         )}
-      </div>
-      {/* DOLE: PLAYER GOLD */}
-      <div className="w-full flex justify-end max-w-md mx-auto" style={{ marginTop: 10 }}>
-        <GoldBar amount={gold} side="bottom" goldAnim={goldAnim} />
       </div>
       {/* Controls */}
       {!winner && (

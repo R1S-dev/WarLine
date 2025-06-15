@@ -1,8 +1,8 @@
-import { Coins, Gem } from "lucide-react";
+import { Coins } from "lucide-react";
 
-export default function GoldBar({ amount, side, goldAnim = false }) {
+export default function GoldBar({ amount, side, goldAnim = false, style = {} }) {
   // side: "bottom" (player) ili "top" (enemy)
-  // Coins za tebe, Gem za protivnika, cyber boje
+  // Coins ikonica za oba
   return (
     <div
       className={`flex items-center gap-2 px-3 py-1 rounded-xl shadow
@@ -16,13 +16,19 @@ export default function GoldBar({ amount, side, goldAnim = false }) {
         boxShadow: side === "bottom"
           ? "0 0 14px 1px #38bdf822"
           : "0 0 14px 1px #e879f922",
+        position: "absolute",
+        left: 14,
+        ...(side === "top"
+          ? { top: 20 }
+          : { bottom: 20 }),
+        zIndex: 40,
+        ...style, // custom stil ako treba
       }}
     >
-      {side === "bottom" ? (
-        <Coins className="text-blue-300 drop-shadow" size={21} />
-      ) : (
-        <Gem className="text-fuchsia-300 drop-shadow" size={21} />
-      )}
+      <Coins
+        className={`drop-shadow ${side === "bottom" ? "text-blue-300" : "text-fuchsia-300"}`}
+        size={21}
+      />
       <span className={`font-bold text-lg tracking-wide ${side === "bottom" ? "text-cyan-100" : "text-pink-100"} transition-transform duration-150 ${goldAnim && side === "bottom" ? "animate-gold-bounce" : ""}`}>
         {amount}
       </span>

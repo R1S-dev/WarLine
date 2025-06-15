@@ -3,6 +3,7 @@ import UnitsLayer from "./UnitsLayer";
 import BaseWithHp from "./BaseWithHp";
 import SideHpBar from "./SideHpBar";
 import LaneBackground from "./LaneBackground";
+import GoldBar from "./GoldBar";
 
 const BOARD_HEIGHT = 560;
 const BOARD_PADDING = 26;
@@ -11,7 +12,6 @@ const BASE_MARGIN = 16;
 const ATTACK_DAMAGE = 25;
 const MOVE_SPEED = 53;
 
-// --- Smanjeni HP za jedinice ---
 const UNITS_BASE_HP = {
   infantry: 50,
   archer: 40,
@@ -23,6 +23,10 @@ export default function GameBoard({
   onGameOver,
   onUnitRemove,
   onUnitsUpdate,
+  playerGold = 0,     // dodaj ove props iz parenta
+  enemyGold = 0,
+  playerGoldAnim = false,
+  enemyGoldAnim = false,
 }) {
   const [topHp, setTopHp] = useState(100);
   const [bottomHp, setBottomHp] = useState(100);
@@ -190,6 +194,19 @@ export default function GameBoard({
         padding: 0,
       }}
     >
+      {/* --- GOLD BAROVI (SAMO JEDAN SET UNUTAR EKRANA) --- */}
+      <GoldBar
+        amount={enemyGold}
+        side="top"
+        goldAnim={enemyGoldAnim}
+      />
+      <GoldBar
+        amount={playerGold}
+        side="bottom"
+        goldAnim={playerGoldAnim}
+      />
+      {/* --- KRAJ GOLD BAROVA --- */}
+
       <div
         ref={laneRef}
         className="relative flex-1 overflow-visible"
