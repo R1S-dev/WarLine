@@ -62,7 +62,7 @@ export default function GameBoard({
 
     intervalRef.current = setInterval(() => {
       let updatedUnits = [...units];
-      let step = 53 * 0.05;
+      let step = 53 * 0.05 * 1.1; // 10% brže kretanje!
       updatedUnits.forEach((u) => (u.fighting = false));
       updatedUnits.sort((a, b) => a.y - b.y);
 
@@ -214,7 +214,7 @@ export default function GameBoard({
           fontWeight: 900,
           letterSpacing: "0.16em",
           color: "#00fff0",
-          fontSize: "24.15px", // ~5% više od prethodnih 23px
+          fontSize: "24.15px",
           textShadow: "0 2px 16px #00fff087, 0 1px 1px #222",
           userSelect: "none",
         }}
@@ -222,13 +222,13 @@ export default function GameBoard({
         WarLine
       </span>
 
-      {/* Tajmer desno gore - samo čist tekst, povećan 5% */}
+      {/* Tajmer desno gore */}
       <span
         className="absolute top-3 right-5 z-50"
         style={{
           fontFamily: "'Orbitron','Montserrat',Arial,sans-serif",
           color: "#b8eaff",
-          fontSize: "16.8px", // ~5% više od prethodnih 16px
+          fontSize: "16.8px",
           fontWeight: 700,
           letterSpacing: "0.08em",
           textShadow: "0 0 7px #02eaff66, 0 0 8px #012e3a33",
@@ -238,7 +238,7 @@ export default function GameBoard({
         {Math.floor(timer/60)}:{(timer%60).toString().padStart(2, '0')}
       </span>
 
-      {/* GOLD barovi: ENEMY LEVO GORE, PLAYER SKROZ DOLE LEVO (spušteni još više) */}
+      {/* GOLD barovi: ENEMY LEVO GORE, PLAYER SKROZ DOLE LEVO */}
       <div className="absolute z-40" style={{top: 45, left: 8}}>
         <GoldBar amount={enemyGold} side="top" goldAnim={enemyGoldAnim} />
       </div>

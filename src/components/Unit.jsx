@@ -78,13 +78,13 @@ export default function Unit({
         flexDirection: "column",
         alignItems: "center",
         width: UNIT_WIDTH,
-        transition: "top 0.1s linear, left 0.13s cubic-bezier(.6,1.8,.3,1)",
+        transition: "top 0.09s linear, left 0.13s cubic-bezier(.6,1.8,.3,1)", // 10% brže
         pointerEvents: "none",
         opacity: baseAnim ? 0 : 1,
         filter: baseAnim
           ? "brightness(2.8) blur(2.3px) saturate(2.3)"
           : fighting
-          ? "drop-shadow(0 0 38px #00f0ffcc) brightness(1.48) saturate(1.27)"
+          ? "drop-shadow(0 0 52px #00f0ffc0) brightness(1.70) saturate(1.42)"
           : "none",
         transform: baseAnim
           ? "scale(2.2) rotate(-22deg) translateY(-120px)"
@@ -174,18 +174,19 @@ export default function Unit({
           }
           .animate-unit-pop { animation: unit-pop 0.19s cubic-bezier(.3,1.6,.5,1) 1; }
 
+          /* NOVA animacija borbe - više šaka, jači blur i pulse */
           @keyframes futuristic-fight {
-            0%   { transform: scale(1) rotate(0deg); filter: brightness(1.11) drop-shadow(0 0 30px #00f0ffcc) saturate(1.11);}
-            15%  { transform: scale(1.13,0.92) rotate(-13deg);}
-            32%  { transform: scale(0.98,1.15) rotate(10deg);}
-            48%  { transform: scale(1.16,0.92) rotate(-11deg);}
-            67%  { transform: scale(0.97,1.14) rotate(14deg);}
-            85%  { transform: scale(1.08,1.01) rotate(-11deg);}
-            100% { transform: scale(1) rotate(0deg); filter: brightness(1.11) drop-shadow(0 0 30px #00f0ffcc) saturate(1.11);}
+            0%   { transform: scale(1) rotate(0deg); filter: brightness(1.23) drop-shadow(0 0 42px #00fff9cc) saturate(1.20);}
+            20%  { transform: scale(1.21,0.82) rotate(-13deg);}
+            34%  { transform: scale(0.95,1.17) rotate(10deg);}
+            50%  { transform: scale(1.23,0.90) rotate(-16deg);}
+            68%  { transform: scale(0.95,1.22) rotate(16deg);}
+            85%  { transform: scale(1.13,0.99) rotate(-13deg);}
+            100% { transform: scale(1) rotate(0deg); filter: brightness(1.23) drop-shadow(0 0 42px #00fff9cc) saturate(1.20);}
           }
           .animate-futuristic-fight {
-            animation: futuristic-fight 0.37s cubic-bezier(.45,1.7,.33,1.1) infinite;
-            box-shadow: 0 0 0 0 #00f0ff33,0 0 36px #7df9ff44;
+            animation: futuristic-fight 0.29s cubic-bezier(.45,1.9,.33,1.15) infinite;
+            box-shadow: 0 0 0 0 #00f0ff33,0 0 48px #7df9ff88;
             background: transparent;
           }
 

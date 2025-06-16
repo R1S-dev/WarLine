@@ -1,4 +1,5 @@
 import { Shield, Crosshair, Truck, CircleDollarSign } from "lucide-react";
+import { useState, useRef } from "react";
 
 // Ikone
 const UNIT_ICONS = {
@@ -13,47 +14,118 @@ const units = [
   { cost: 100, type: "tank", hp: 200 },
 ];
 
+const COOLDOWN = 1.0; // sekunda
+
 export default function ControlPanel({ gold, onSpawn }) {
+  // Cooldown state za svaki tip unita
+  const [cooldowns, setCooldowns] = useState({
+    infantry: 0,
+    archer: 0,
+    tank: 0,
+  });
+  // Ref za animaciju intervala
+  const intervalRef = useRef(null);
+
+  // Interna funkcija za pokretanje cooldowna po tipu
+  const startCooldown = (type) => {
+    setCooldowns((prev) => ({ ...prev, [type]: COOLDOWN }));
+    // Ako nije već pokrenut interval, pokreni ga:
+    if (!intervalRef.current) {
+      intervalRef.current = setInterval(() => {
+        setCooldowns((prev) => {
+          let updated = { ...prev };
+          let active = false;
+          for (const k in updated) {
+            if (updated[k] > 0) {
+              updated[k] = Math.max(0, updated[k] - 0.1);
+              if (updated[k] > 0) active = true;
+            }
+          }
+          if (!active) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          return updated;
+        });
+      }, 100);
+    }
+  };
+
+  // Kada se klikne spawn dugme
+  const handleSpawn = (unit) => {
+    if (gold < unit.cost || cooldowns[unit.type] > 0) return;
+    onSpawn(unit);
+    startCooldown(unit.type);
+  };
+
   return (
     <div className="flex justify-between px-1 py-2 w-full max-w-md bg-[#181A1F] rounded-xl shadow border border-[#191d23] mt-2 gap-2 z-10">
-      {units.map((unit, idx) => (
-        <button
-          key={unit.type}
-          onClick={() => gold >= unit.cost && onSpawn(unit)}
-          disabled={gold < unit.cost}
-          className={[
-            "main-btn",
-            "futur-btn-bg-main",
-            "futur-btn-border",
-            "flex-1 flex flex-col items-center justify-center px-1.5 py-2 rounded-xl outline-none border",
-            "transition-all duration-150 font-bold relative overflow-hidden",
-            "unit-send-btn",
-            gold >= unit.cost
-              ? "hover:scale-105"
-              : "opacity-60 cursor-not-allowed pointer-events-none",
-          ].join(" ")}
-          style={{
-            fontFamily: "'Orbitron','Montserrat',Arial,sans-serif",
-            minWidth: 0,
-            fontSize: 17,
-            zIndex: 1,
-          }}
-        >
-          {/* Animated BG like menu */}
-          <span className="btn-bg-anim" aria-hidden="true"></span>
-          <span className="btn-inner-anim flex flex-col items-center z-10">
-            {/* Ikonica jedinice */}
-            <span className="mb-1">{UNIT_ICONS[unit.type]}</span>
-            {/* Cena: coin ikonica + broj */}
-            <span className="flex items-center gap-1">
-              <CircleDollarSign size={17} strokeWidth={2.2} className="text-yellow-400 icon-anim" />
-              <span className="font-bold text-yellow-300 text-base">{unit.cost}</span>
+      {units.map((unit, idx) => {
+        const isCooling = cooldowns[unit.type] > 0;
+        const canClick = gold >= unit.cost && !isCooling;
+        return (
+          <button
+            key={unit.type}
+            onClick={() => handleSpawn(unit)}
+            disabled={!canClick}
+            className={[
+              "main-btn",
+              "futur-btn-bg-main",
+              "futur-btn-border",
+              "flex-1 flex flex-col items-center justify-center px-1.5 py-2 rounded-xl outline-none border",
+              "transition-all duration-150 font-bold relative overflow-hidden",
+              "unit-send-btn",
+              canClick
+                ? "hover:scale-105"
+                : "opacity-60 cursor-not-allowed pointer-events-none",
+            ].join(" ")}
+            style={{
+              fontFamily: "'Orbitron','Montserrat',Arial,sans-serif",
+              minWidth: 0,
+              fontSize: 17,
+              zIndex: 1,
+              position: "relative",
+            }}
+          >
+            <span className="btn-bg-anim" aria-hidden="true"></span>
+            <span className="btn-inner-anim flex flex-col items-center z-10">
+              <span className="mb-1">{UNIT_ICONS[unit.type]}</span>
+              <span className="flex items-center gap-1">
+                <CircleDollarSign size={17} strokeWidth={2.2} className="text-yellow-400 icon-anim" />
+                <span className="font-bold text-yellow-300 text-base">{unit.cost}</span>
+              </span>
             </span>
-          </span>
-        </button>
-      ))}
+            {/* Cooldown overlay */}
+            {isCooling && (
+              <span
+                className="cooldown-anim"
+                style={{
+                  position: "absolute",
+                  left: 0, top: 0, right: 0, bottom: 0,
+                  background: "rgba(30,40,60,0.73)",
+                  zIndex: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 700,
+                  fontFamily: "'Orbitron','Montserrat',Arial,sans-serif",
+                  fontSize: 20,
+                  color: "#67e8f9",
+                  letterSpacing: "0.04em",
+                  transition: "background 0.18s",
+                  pointerEvents: "none",
+                  userSelect: "none",
+                }}
+              >
+                {cooldowns[unit.type].toFixed(1)}s
+              </span>
+            )}
+          </button>
+        );
+      })}
+      {/* ... (style iz tvog originala dole) ... */}
       <style>{`
-        /* Futuristic animated button bg (as in main menu) */
+        /* Sve tvoje postojeće stilove ostavi ovde */
         .main-btn {
           border-radius: 1.15rem;
           font-size: 1.05rem;
@@ -130,7 +202,6 @@ export default function ControlPanel({ gold, onSpawn }) {
         .unit-send-btn:not([disabled]):hover .btn-bg-anim {
           filter: brightness(1.11) blur(0.5px);
         }
-        /* Responsive font */
         @media (max-width: 640px) {
           .main-btn {
             font-size: 1.01rem;
