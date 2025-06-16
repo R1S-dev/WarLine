@@ -1,13 +1,16 @@
 export default function LaneBackground() {
   return (
     <>
+      {/* Glavna tabla sa tamnijim, modernim, staklenim efektom i borderom */}
       <div
         className="absolute inset-0 w-full h-full z-0 rounded-[22px] lane-bg-futur"
         style={{
           borderRadius: 22,
-          border: "2.5px solid #28334a",
-          boxShadow: "0 0 60px 5px #00f2ff44, 0 0 0 2.5px #23263a",
+          border: "2.8px solid #23263a",
+          boxShadow: "0 0 70px 5px #0ff2ff33, 0 0 0 2.5px #101422",
           overflow: "hidden",
+          background: "rgba(22,26,36,0.98)", // stakleni efekat
+          backdropFilter: "blur(1.5px)",
           pointerEvents: "none",
         }}
       />
@@ -18,12 +21,12 @@ export default function LaneBackground() {
           width: 4,
           height: "94%",
           background:
-            "linear-gradient(180deg,#60fdffcc 0%,#0ff2 50%,#23263a 100%)",
-          filter: "blur(1.8px)",
+            "linear-gradient(180deg,#50e5ffcc 0%,#0ff2 55%,#23263a 100%)",
+          filter: "blur(2.2px)",
           transform: "translateX(-50%)",
           top: "3%",
-          borderRadius: 8,
-          opacity: 0.5,
+          borderRadius: 10,
+          opacity: 0.57,
           zIndex: 1,
           pointerEvents: "none",
         }}
@@ -32,12 +35,12 @@ export default function LaneBackground() {
       <div
         className="absolute left-0 right-0"
         style={{
-          height: 9,
+          height: 11,
           top: 0,
           background:
-            "linear-gradient(90deg,#7afcff44 0%,rgba(0,0,0,0.00) 33%,rgba(0,0,0,0.00) 67%,#e879f944 100%)",
-          borderRadius: "12px 12px 0 0",
-          filter: "blur(2.5px)",
+            "linear-gradient(90deg,#53e5ff55 0%,rgba(0,0,0,0.00) 30%,rgba(0,0,0,0.00) 70%,#e879f933 100%)",
+          borderRadius: "14px 14px 0 0",
+          filter: "blur(3.2px)",
           zIndex: 1,
           pointerEvents: "none",
         }}
@@ -45,12 +48,12 @@ export default function LaneBackground() {
       <div
         className="absolute left-0 right-0"
         style={{
-          height: 9,
+          height: 11,
           bottom: 0,
           background:
-            "linear-gradient(90deg,#7afcff44 0%,rgba(0,0,0,0.00) 33%,rgba(0,0,0,0.00) 67%,#e879f944 100%)",
-          borderRadius: "0 0 12px 12px",
-          filter: "blur(2.5px)",
+            "linear-gradient(90deg,#53e5ff55 0%,rgba(0,0,0,0.00) 30%,rgba(0,0,0,0.00) 70%,#e879f933 100%)",
+          borderRadius: "0 0 14px 14px",
+          filter: "blur(3.2px)",
           zIndex: 1,
           pointerEvents: "none",
         }}
@@ -58,16 +61,16 @@ export default function LaneBackground() {
       <style>
         {`
           .lane-bg-futur {
-            background: linear-gradient(120deg, #182132 0%, #20405c 25%, #1c9eb5 54%, #22374e 75%, #131b28 100%);
+            background: linear-gradient(120deg, #141c26 0%, #1a2334 25%, #195c74 54%, #1e4865 75%, #111823 100%);
             animation: lane-futur-bg-move 22s cubic-bezier(.6,0,.4,1) infinite alternate;
-            opacity: 0.97;
+            opacity: 0.98;
           }
           .glow-pulse {
-            animation: glow-pulse 1.8s cubic-bezier(.7,.3,.3,1.1) infinite;
+            animation: glow-pulse 2.2s cubic-bezier(.7,.3,.3,1.1) infinite;
           }
           @keyframes glow-pulse {
-            0%,100% { box-shadow: 0 0 20px 7px #00f2ff33; }
-            50% { box-shadow: 0 0 50px 22px #00f2ff99;}
+            0%,100% { box-shadow: 0 0 20px 7px #59eaff33; }
+            55% { box-shadow: 0 0 54px 18px #2cf2ff99;}
           }
           @keyframes lane-futur-bg-move {
             0% { background-position: 0% 60%; }

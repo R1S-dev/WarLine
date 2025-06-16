@@ -4,14 +4,12 @@ import BaseWithHp from "./BaseWithHp";
 import SideHpBar from "./SideHpBar";
 import LaneBackground from "./LaneBackground";
 import GoldBar from "./GoldBar";
-import { Sparkles } from "lucide-react";
 
-const BOARD_HEIGHT = 560;
-const BOARD_PADDING = 26;
+const BOARD_PADDING = 18;
 const UNIT_SIZE = 32;
-const BASE_MARGIN = 26; // povećano zbog paddinga na fonu/gore
-const ATTACK_DAMAGE = 25;
-const MOVE_SPEED = 53;
+const BASE_MARGIN = 34;
+
+const BOARD_HEIGHT_RATIO = 0.61;
 
 const UNITS_BASE_HP = {
   infantry: 50,
@@ -35,26 +33,36 @@ export default function GameBoard({
   const [baseHitAnim, setBaseHitAnim] = useState(null);
   const intervalRef = useRef();
   const laneRef = useRef(null);
-  const [laneWidth, setLaneWidth] = useState(320);
+  const [laneWidth, setLaneWidth] = useState(360);
+  const [timer, setTimer] = useState(0);
+  const [boardHeight, setBoardHeight] = useState(440);
 
-  // Responsive lane width
+  // Responsive lane width & height (fullscreen board)
   useEffect(() => {
-    function updateWidth() {
+    function updateDimensions() {
+      const vh = window.innerHeight;
+      const usable = vh - 55 - 45 - 84 - 2 * BOARD_PADDING;
+      const height = Math.max(300, usable);
+      setBoardHeight(height);
       if (laneRef.current) setLaneWidth(laneRef.current.offsetWidth);
     }
-    updateWidth();
-    window.addEventListener("resize", updateWidth);
-    return () => window.removeEventListener("resize", updateWidth);
+    updateDimensions();
+    window.addEventListener("resize", updateDimensions);
+    return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
-  // Units movement, collision and fighting logic
+  useEffect(() => {
+    const interval = setInterval(() => setTimer((t) => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     if (units.length === 0) return;
 
     intervalRef.current = setInterval(() => {
       let updatedUnits = [...units];
-      let step = MOVE_SPEED * 0.05;
+      let step = 53 * 0.05;
       updatedUnits.forEach((u) => (u.fighting = false));
       updatedUnits.sort((a, b) => a.y - b.y);
 
@@ -84,7 +92,7 @@ export default function GameBoard({
             const other = updatedUnits[j];
             if (
               other.y > u.y &&
-              Math.abs(u.y - other.y) < UNIT_SIZE
+              Math.abs(other.y - u.y) < UNIT_SIZE
             ) {
               blocked = true;
               break;
@@ -92,10 +100,10 @@ export default function GameBoard({
           }
           if (
             !blocked &&
-            u.y < BOARD_HEIGHT - UNIT_SIZE - BASE_MARGIN
+            u.y < boardHeight - UNIT_SIZE - BASE_MARGIN
           ) {
             updatedUnits[i].y = Math.min(
-              BOARD_HEIGHT - UNIT_SIZE - BASE_MARGIN,
+              boardHeight - UNIT_SIZE - BASE_MARGIN,
               u.y + step
             );
           }
@@ -117,8 +125,8 @@ export default function GameBoard({
       }
       if (fightingPairs.length > 0) {
         fightingPairs.forEach(([i, j]) => {
-          updatedUnits[i].hp -= ATTACK_DAMAGE * 0.2;
-          updatedUnits[j].hp -= ATTACK_DAMAGE * 0.2;
+          updatedUnits[i].hp -= 25 * 0.2;
+          updatedUnits[j].hp -= 25 * 0.2;
           if (updatedUnits[i].hp <= 0) idsToRemove.add(updatedUnits[i].id);
           if (updatedUnits[j].hp <= 0) idsToRemove.add(updatedUnits[j].id);
         });
@@ -137,7 +145,7 @@ export default function GameBoard({
         }
         if (
           u.side === "top" &&
-          u.y >= BOARD_HEIGHT - UNIT_SIZE - BASE_MARGIN
+          u.y >= boardHeight - UNIT_SIZE - BASE_MARGIN
         ) {
           baseHitEvent = { side: "bottom", y: u.y, type: u.type };
           baseHitUnitId = u.id;
@@ -172,59 +180,77 @@ export default function GameBoard({
     }, 50);
 
     return () => clearInterval(intervalRef.current);
-    // eslint-disable-next-line
-  }, [units, onGameOver, onUnitRemove, onUnitsUpdate]);
+  }, [units, onGameOver, onUnitRemove, onUnitsUpdate, boardHeight]);
 
-  // --- mobile offset: pomeri celu tablu malo dole da gornja baza ne puca u vrh ---
-  // i dodaće se padding gore za logo i vizuelni razmak
   return (
     <div
-      className="relative w-full max-w-md mx-auto flex flex-col items-stretch z-10"
+      className="relative flex flex-col items-stretch z-10 futuristic-board-outer"
       style={{
-        minHeight: 340,
-        height: BOARD_HEIGHT + 2 * (BASE_MARGIN + BOARD_PADDING),
+        flex: 1,
+        minHeight: 0,
+        height: "100%",
+        width: "100%",
+        maxWidth: 600,
+        margin: "0 auto",
         padding: 0,
-        paddingTop: 54, // za logo i razmak na fonu
+        paddingTop: 55,
+        paddingBottom: 0,
+        boxSizing: "border-box",
+        position: "relative",
+        background: "none",
       }}
     >
-      {/* Futuristic background (kao u main menu) */}
+      {/* Futuristički background */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 pointer-events-none z-0"
-        style={{
-          background: "radial-gradient(ellipse at 50% 60%, #151d2a 0%, #070d17 100%)",
-        }}
+        className="absolute inset-0 pointer-events-none z-0 board-bg-futur-anim"
       />
 
-      {/* Mali WarLine logo gore desno */}
-      <div
-        className="absolute top-3 right-6 z-50 flex items-center gap-1 px-2 py-1 rounded-full warline-logo-mini"
+      {/* WarLine tekst levo gore */}
+      <span
+        className="absolute top-3 left-5 z-50"
         style={{
-          background: "rgba(10,24,60,0.85)",
-          boxShadow: "0 2px 12px #00eaff33",
-          border: "1.7px solid #24eaff33",
           fontFamily: "'Orbitron','Montserrat',Arial,sans-serif",
           fontWeight: 900,
-          letterSpacing: "0.12em",
-          color: "#b8eaff",
-          fontSize: 17,
-          textShadow: "0 0 6px #22eaff44, 0 0 8px #012e3a44",
-          userSelect: "none"
+          letterSpacing: "0.16em",
+          color: "#00fff0",
+          fontSize: "24.15px", // ~5% više od prethodnih 23px
+          textShadow: "0 2px 16px #00fff087, 0 1px 1px #222",
+          userSelect: "none",
         }}
       >
-        <Sparkles className="w-5 h-5 text-cyan-300 drop-shadow" style={{marginRight:4,marginTop:-2}} />
-        <span>WarLine</span>
-      </div>
+        WarLine
+      </span>
 
-      {/* GOLD barovi */}
-      <GoldBar amount={enemyGold} side="top" goldAnim={enemyGoldAnim} style={{ top: 30 }} />
-      <GoldBar amount={playerGold} side="bottom" goldAnim={playerGoldAnim} style={{ bottom: 32 }} />
+      {/* Tajmer desno gore - samo čist tekst, povećan 5% */}
+      <span
+        className="absolute top-3 right-5 z-50"
+        style={{
+          fontFamily: "'Orbitron','Montserrat',Arial,sans-serif",
+          color: "#b8eaff",
+          fontSize: "16.8px", // ~5% više od prethodnih 16px
+          fontWeight: 700,
+          letterSpacing: "0.08em",
+          textShadow: "0 0 7px #02eaff66, 0 0 8px #012e3a33",
+          userSelect: "none",
+        }}
+      >
+        {Math.floor(timer/60)}:{(timer%60).toString().padStart(2, '0')}
+      </span>
+
+      {/* GOLD barovi: ENEMY LEVO GORE, PLAYER SKROZ DOLE LEVO (spušteni još više) */}
+      <div className="absolute z-40" style={{top: 45, left: 8}}>
+        <GoldBar amount={enemyGold} side="top" goldAnim={enemyGoldAnim} />
+      </div>
+      <div className="absolute z-40" style={{bottom: -15, left: 8}}>
+        <GoldBar amount={playerGold} side="bottom" goldAnim={playerGoldAnim} />
+      </div>
 
       <div
         ref={laneRef}
         className="relative flex-1 overflow-visible lane-anim-bg-futur"
         style={{
-          height: BOARD_HEIGHT,
+          height: boardHeight,
           margin: "0 10px",
         }}
       >
@@ -238,36 +264,38 @@ export default function GameBoard({
             type={baseHitAnim.type}
           />
         )}
-        {/* Baze */}
+        {/* Baze - povećane, modernizovane */}
         <div
           className={`absolute left-1/2 z-20 transition-transform duration-200 ${
             baseHit?.side === "top" ? "scale-[1.13] animate-base-hit" : ""
           }`}
           style={{
-            top: 11, // pomereno dole zbog paddinga
+            top: 18,
             transform: "translate(-50%,-36%)",
             pointerEvents: "none",
-            filter: baseHit?.side === "top" ? "drop-shadow(0 0 34px #fff8)" : undefined,
+            filter: baseHit?.side === "top" ? "drop-shadow(0 0 44px #00fff088)" : undefined,
           }}
         >
-          <BaseWithHp side="top" hp={topHp} />
+          <BaseWithHp side="top" hp={topHp} size="lg" />
         </div>
         <div
           className={`absolute left-1/2 z-20 transition-transform duration-200 ${
             baseHit?.side === "bottom" ? "scale-[1.13] animate-base-hit" : ""
           }`}
           style={{
-            bottom: 11,
+            bottom: 18,
             transform: "translate(-50%,36%)",
             pointerEvents: "none",
-            filter: baseHit?.side === "bottom" ? "drop-shadow(0 0 34px #fff8)" : undefined,
+            filter: baseHit?.side === "bottom" ? "drop-shadow(0 0 44px #00fff088)" : undefined,
           }}
         >
-          <BaseWithHp side="bottom" hp={bottomHp} />
+          <BaseWithHp side="bottom" hp={bottomHp} size="lg" />
         </div>
-        {/* HP barovi */}
-        <SideHpBar hp={topHp} side="top" />
-        <SideHpBar hp={bottomHp} side="bottom" />
+
+        {/* HP barovi - veći i moderniji */}
+        <SideHpBar hp={topHp} side="top" big />
+        <SideHpBar hp={bottomHp} side="bottom" big />
+
         {/* Jedinice */}
         <UnitsLayer
           units={units}
@@ -277,35 +305,57 @@ export default function GameBoard({
         />
         <style>
           {`
-          @keyframes base-hit {
-            0% { filter: brightness(1.3) drop-shadow(0 0 34px #fff9);}
-            40% { filter: brightness(1.9) drop-shadow(0 0 60px #ffeede); }
-            100% { filter: brightness(1.0) drop-shadow(0 0 0px #fff0);}
+          .board-bg-futur-anim {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+              linear-gradient(135deg, #101629 40%, #0a1c35 100%),
+              radial-gradient(ellipse at 60% 10%, #44e6f51e 0%, #0a1c3500 70%),
+              radial-gradient(ellipse at 50% 100%, #3f63f61c 0%, #0a1c3500 65%),
+              repeating-linear-gradient(120deg, #0ff2 0px, #00eaff09 1.5px, #0000 2.5px, #0000 16px);
+            animation: space-breath 10s cubic-bezier(.6,0,.4,1) infinite alternate;
           }
-          .animate-base-hit {
-            animation: base-hit 0.36s cubic-bezier(.6,2,.2,1.1) 1;
+          @keyframes space-breath {
+            0% { filter: brightness(1) blur(0.5px); background-position: 0% 60%, 0 0, 0 0, 0 0;}
+            60% { filter: brightness(1.04) blur(1px); background-position: 12% 54%, 0 8px, 0 -8px, 0 1px;}
+            100% { filter: brightness(1.01) blur(0.6px); background-position: 0% 60%, 0 0, 0 0, 0 0;}
           }
           .lane-anim-bg-futur::before {
             content: "";
             position: absolute;
             inset: 0;
             z-index: 0;
-            background: linear-gradient(120deg, #182132 0%, #20405c 25%, #1c9eb5 54%, #22374e 75%, #131b28 100%);
-            opacity: 0.95;
+            background: linear-gradient(120deg, #151a28 0%, #235985 35%, #1c9eb5 54%, #22374e 75%, #131b28 100%);
+            opacity: 0.98;
             pointer-events: none;
-            border-radius: 1.46rem;
-            box-shadow: 0 4px 38px #1b8edc33, 0 2px 8px #081a2c;
-            animation: lane-futur-bg-move 22s cubic-bezier(.6,0,.4,1) infinite alternate;
+            border-radius: 1.56rem;
+            box-shadow: 0 4px 60px #1b8edc53, 0 2px 8px #081a2c;
+            animation: lane-futur-bg-move 18s cubic-bezier(.6,0,.4,1) infinite alternate;
           }
           @media (max-width: 650px) {
             .lane-anim-bg-futur::before {
-              border-radius: 0.79rem;
-              box-shadow: 0 2px 16px #1377c822, 0 1px 2px #0a1a2c;
+              border-radius: 0.89rem;
+              box-shadow: 0 2px 26px #1377c822, 0 1px 2px #0a1a2c;
             }
           }
           @keyframes lane-futur-bg-move {
             0% { background-position: 0% 60%; }
             100% { background-position: 100% 40%; }
+          }
+          .futuristic-board-outer {
+            box-shadow: 0 14px 70px #00eaff33, 0 2px 8px #001e33;
+            border-radius: 2.35rem;
+            background: none;
+          }
+          @keyframes base-hit {
+            0% { filter: brightness(1.3) drop-shadow(0 0 54px #fff9);}
+            40% { filter: brightness(2.1) drop-shadow(0 0 84px #ffeede); }
+            100% { filter: brightness(1.0) drop-shadow(0 0 0px #fff0);}
+          }
+          .animate-base-hit {
+            animation: base-hit 0.36s cubic-bezier(.6,2,.2,1.1) 1;
           }
           `}
         </style>
@@ -324,62 +374,62 @@ function BaseExplosion({ side, laneWidth, type }) {
     <div
       className="pointer-events-none absolute left-1/2 z-50"
       style={{
-        top: side === "top" ? 27 : undefined,
-        bottom: side === "bottom" ? 27 : undefined,
+        top: side === "top" ? 32 : undefined,
+        bottom: side === "bottom" ? 32 : undefined,
         transform: "translate(-50%,0)",
       }}
     >
       <span className="absolute left-1/2 top-1/2 z-40"
         style={{
-          width: 88,
-          height: 88,
+          width: 98,
+          height: 98,
           transform: "translate(-50%,-50%)",
           pointerEvents: "none",
         }}
       >
-        <svg width={88} height={88}>
+        <svg width={98} height={98}>
           <circle
-            cx={44}
-            cy={44}
-            r={34}
+            cx={49}
+            cy={49}
+            r={38}
             fill={color}
             fillOpacity="0.22"
             className="explosion-anim"
             style={{
-              filter: `blur(13px) drop-shadow(0 0 32px ${color})`,
+              filter: `blur(15px) drop-shadow(0 0 38px ${color})`,
             }}
           />
           <circle
-            cx={44}
-            cy={44}
-            r={17}
+            cx={49}
+            cy={49}
+            r={20}
             fill="white"
             fillOpacity="0.37"
             className="explosion-anim"
             style={{
-              filter: "blur(3.5px)",
+              filter: "blur(4px)",
             }}
           />
         </svg>
       </span>
       <span className="absolute left-1/2 top-1/2"
         style={{
-          width: 44,
-          height: 44,
+          width: 54,
+          height: 54,
           transform: "translate(-50%,-50%)",
           pointerEvents: "none",
         }}
       >
-        <svg width={44} height={44}>
+        <svg width={54} height={54}>
           <circle
-            cx={22}
-            cy={22}
-            r={16}
+            cx={27}
+            cy={27}
+            r={21}
             fill={color}
             fillOpacity="0.54"
             className="explosion-anim"
             style={{
-              filter: "blur(5px)",
+              filter: "blur(6px)",
             }}
           />
         </svg>
@@ -390,8 +440,8 @@ function BaseExplosion({ side, laneWidth, type }) {
           animation: explosion-grow-fade 0.44s cubic-bezier(.6,1.7,.4,1.01) 1;
         }
         @keyframes explosion-grow-fade {
-          0% { opacity: 1; transform: scale(0.15);}
-          50% { opacity: 0.78; transform: scale(1.08);}
+          0% { opacity: 1; transform: scale(0.17);}
+          50% { opacity: 0.83; transform: scale(1.12);}
           80% { opacity: 0.6; }
           100% { opacity: 0; transform: scale(1.7);}
         }

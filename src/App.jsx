@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import GameBoard from "./components/GameBoard";
 import ControlPanel from "./components/ControlPanel";
 import GameOverScreen from "./components/GameOverScreen";
-import MenuScreen from "./components/MenuScreen"; // NOVO!
+import MenuScreen from "./components/MenuScreen";
 
 // Custom hook za zlato sa animacijom, sada sporije i pauzira kad je winner
 function useGold(start = 100, stopped = false) {
@@ -11,7 +11,6 @@ function useGold(start = 100, stopped = false) {
 
   useEffect(() => {
     if (stopped) return;
-    // Sad je 2 po sekundi (svakih 500ms)
     const interval = setInterval(() => {
       setGold(g => {
         setAnim(true);
@@ -38,17 +37,14 @@ function getRandomUnit(aiGold) {
 }
 
 export default function App() {
-  const [screen, setScreen] = useState("menu"); // "menu" | "game"
+  const [screen, setScreen] = useState("menu");
   const [units, setUnits] = useState([]);
   const [winner, setWinner] = useState(null);
   const [resetKey, setResetKey] = useState(0);
 
-  // Gold se broji SAMO dok nema winner-a!
   const [gold, setGold, goldAnim] = useGold(100, !!winner || screen === "menu");
   const [aiGold, setAiGold] = useState(100);
   const aiGoldRef = useRef(aiGold);
-
-  // --- Cooldown za spawn ---
   const [spawnCooldown, setSpawnCooldown] = useState(false);
 
   useEffect(() => { aiGoldRef.current = aiGold; }, [aiGold]);
@@ -62,16 +58,15 @@ export default function App() {
         side: "bottom",
         id: Math.random().toString(36).slice(2),
         hp: unit.hp,
-        y: 560,
+        y: 670,
         spawnTime: Date.now(),
       },
     ]);
     setGold(prev => prev - unit.cost);
     setSpawnCooldown(true);
-    setTimeout(() => setSpawnCooldown(false), 500); // 0.5s cooldown
+    setTimeout(() => setSpawnCooldown(false), 500);
   };
 
-  // AI gold i spawn (takođe usporen na 2/sec)
   useEffect(() => {
     if (winner || screen !== "game") return;
     let currentGold = aiGoldRef.current;
@@ -93,7 +88,7 @@ export default function App() {
         ]);
       }
       setAiGold(currentGold);
-    }, 500); // 2/sec
+    }, 500);
     return () => clearInterval(aiInterval);
   }, [winner, screen]);
 
@@ -121,7 +116,7 @@ export default function App() {
     alert("Multiplayer dolazi uskoro! :)");
   };
 
-  // RENDER
+  // --- FULLSCREEN LAYOUT ---
   if (screen === "menu") {
     return (
       <MenuScreen
@@ -132,9 +127,30 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-dvh w-full bg-gradient-to-b from-[#181c23] via-[#232837] to-[#32394a] text-white flex flex-col items-center gap-4 py-2 px-1 sm:gap-8 sm:py-8 sm:px-2 relative overflow-x-hidden">
-      {/* BOARD */}
-      <div className="relative w-full max-w-md">
+    <div
+      style={{
+        minHeight: "100dvh",
+        height: "100dvh",
+        width: "100vw",
+        maxWidth: "100vw",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        background: "linear-gradient(to bottom, #181c23 0%, #232837 45%, #32394a 100%)",
+      }}
+    >
+      <div style={{
+        flex: 1,
+        minHeight: 0,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "stretch",
+        alignItems: "stretch",
+        position: "relative",
+        overflow: "hidden",
+        width: "100vw",
+        maxWidth: "100vw",
+      }}>
         <GameBoard
           key={resetKey}
           units={units}
@@ -152,9 +168,21 @@ export default function App() {
           />
         )}
       </div>
-      {/* Controls */}
+      {/* Dugmići na dnu, uvek prikazani, sticky! */}
       {!winner && (
-        <div className="w-full max-w-md mx-auto">
+        <div style={{
+          width: "100vw",
+          maxWidth: 600,
+          margin: "0 auto",
+          position: "sticky",
+          bottom: 0,
+          left: 0,
+          zIndex: 99,
+          background: "rgba(24,28,35,0.96)",
+          boxShadow: "0 -2px 18px #00eaff18",
+          padding: "8px 0 8px 0",
+          minHeight: 64,
+        }}>
           <ControlPanel gold={gold} onSpawn={handleSpawn} spawnCooldown={spawnCooldown} />
         </div>
       )}
