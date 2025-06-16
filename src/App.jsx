@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import GameBoard from "./components/GameBoard";
 import ControlPanel from "./components/ControlPanel";
 import GameOverScreen from "./components/GameOverScreen";
+import MenuScreen from "./components/MenuScreen"; // NOVO!
 
 // Custom hook za zlato sa animacijom, sada sporije i pauzira kad je winner
 function useGold(start = 100, stopped = false) {
@@ -37,12 +38,13 @@ function getRandomUnit(aiGold) {
 }
 
 export default function App() {
+  const [screen, setScreen] = useState("menu"); // "menu" | "game"
   const [units, setUnits] = useState([]);
   const [winner, setWinner] = useState(null);
   const [resetKey, setResetKey] = useState(0);
 
   // Gold se broji SAMO dok nema winner-a!
-  const [gold, setGold, goldAnim] = useGold(100, !!winner);
+  const [gold, setGold, goldAnim] = useGold(100, !!winner || screen === "menu");
   const [aiGold, setAiGold] = useState(100);
   const aiGoldRef = useRef(aiGold);
 
@@ -71,7 +73,7 @@ export default function App() {
 
   // AI gold i spawn (takođe usporen na 2/sec)
   useEffect(() => {
-    if (winner) return;
+    if (winner || screen !== "game") return;
     let currentGold = aiGoldRef.current;
     const aiInterval = setInterval(() => {
       currentGold += 1;
@@ -93,7 +95,7 @@ export default function App() {
       setAiGold(currentGold);
     }, 500); // 2/sec
     return () => clearInterval(aiInterval);
-  }, [winner]);
+  }, [winner, screen]);
 
   const handleGameOver = (message) => {
     if (message === "🎉 Pobeda IGRAČA!") setWinner("player");
@@ -104,7 +106,7 @@ export default function App() {
   const handleUnitRemove = (unitId) => setUnits(prev => prev.filter(u => u.id !== unitId));
   const handleUnitsUpdate = (newUnits) => setUnits(newUnits);
 
-  const resetGame = () => {
+  const startGame = () => {
     setUnits([]);
     setGold(100);
     setAiGold(100);
@@ -112,7 +114,22 @@ export default function App() {
     setWinner(null);
     setResetKey(prev => prev + 1);
     setSpawnCooldown(false);
+    setScreen("game");
   };
+
+  const handleSearchOpponent = () => {
+    alert("Multiplayer dolazi uskoro! :)");
+  };
+
+  // RENDER
+  if (screen === "menu") {
+    return (
+      <MenuScreen
+        onStartVsAI={startGame}
+        onSearchOpponent={handleSearchOpponent}
+      />
+    );
+  }
 
   return (
     <div className="min-h-dvh w-full bg-gradient-to-b from-[#181c23] via-[#232837] to-[#32394a] text-white flex flex-col items-center gap-4 py-2 px-1 sm:gap-8 sm:py-8 sm:px-2 relative overflow-x-hidden">
@@ -131,7 +148,7 @@ export default function App() {
         {winner && (
           <GameOverScreen
             winner={winner}
-            onRestart={resetGame}
+            onRestart={() => setScreen("menu")}
           />
         )}
       </div>

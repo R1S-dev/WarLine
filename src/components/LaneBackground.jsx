@@ -2,10 +2,8 @@ export default function LaneBackground() {
   return (
     <>
       <div
-        className="absolute inset-0 w-full h-full z-0 rounded-[22px]"
+        className="absolute inset-0 w-full h-full z-0 rounded-[22px] lane-bg-futur"
         style={{
-          background:
-            "linear-gradient(180deg,rgba(46,54,94,0.93) 0%,rgba(29,34,55,0.98) 60%,rgba(40,52,84,1) 100%)",
           borderRadius: 22,
           border: "2.5px solid #28334a",
           boxShadow: "0 0 60px 5px #00f2ff44, 0 0 0 2.5px #23263a",
@@ -25,7 +23,7 @@ export default function LaneBackground() {
           transform: "translateX(-50%)",
           top: "3%",
           borderRadius: 8,
-          opacity: 0.42,
+          opacity: 0.5,
           zIndex: 1,
           pointerEvents: "none",
         }}
@@ -59,12 +57,21 @@ export default function LaneBackground() {
       />
       <style>
         {`
+          .lane-bg-futur {
+            background: linear-gradient(120deg, #182132 0%, #20405c 25%, #1c9eb5 54%, #22374e 75%, #131b28 100%);
+            animation: lane-futur-bg-move 22s cubic-bezier(.6,0,.4,1) infinite alternate;
+            opacity: 0.97;
+          }
           .glow-pulse {
             animation: glow-pulse 1.8s cubic-bezier(.7,.3,.3,1.1) infinite;
           }
           @keyframes glow-pulse {
             0%,100% { box-shadow: 0 0 20px 7px #00f2ff33; }
             50% { box-shadow: 0 0 50px 22px #00f2ff99;}
+          }
+          @keyframes lane-futur-bg-move {
+            0% { background-position: 0% 60%; }
+            100% { background-position: 100% 40%; }
           }
         `}
       </style>
